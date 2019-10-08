@@ -11,16 +11,12 @@ Suggested workshop order:
 
 **System Requirements**
 
-> You will need to have Docker Desktop Enterprise installed on your laptop with internet access in order to complete this lab. An XX-day evaluation license is included with the download of Docker Desktop Enterprise.
-> * Windows 10: Docker Desktop requires Hyper-V features in Windows 10 so you will need Windows 10 Pro or Enterprise to successfully install it.
->   * [Download Docker Desktop Enterprise for Windows 10](https://download.docker.com/win/enterprise/DockerDesktop.msi)
-> * macOS: Docker Desktop requires macOS XX or later
->   * [Download Docker Desktop Enterprise for macOS](https://docs.docker.com/ee/desktop/admin/configure/mac-admin)
->  * You will also need a code editor of your choice. Instructions here demonstrate the use of [Microsoft Visual Studio Code (vscode)](https://code.visualstudio.com/download), but any code editor should work.
->   * No knowledge of the code syntax is assumed.
->   * Some steps demonstrate the use of the [Docker plugin](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker) in vscode; many code editors have Docker plugins available that should function similarly. The plugins are not required and the equivalent command will be given to complete the step.
 
-**The Docker Desktop Enterprise download is approximately 1.8 GB so please download and install before the workshop**
+  You need Docker Desktop Enterprise installed on your laptop or workstation with internet access to complete this lab. An XX-day evaluation license is included with the download of Docker Desktop Enterprise.
+ * You will also need a code editor of your choice. Instructions here demonstrate the use of [Microsoft Visual Studio Code (vscode)](https://code.visualstudio.com/download), but any code editor should work.
+   * No knowledge of the code syntax is assumed.
+   * Some steps demonstrate the use of the [Docker plugin](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker) in vscode; many code editors have Docker plugins available that should function similarly. The plugins are not required and the equivalent command will be given to complete the step.
+   * **The Docker Desktop Enterprise download is approximately 1.8 GB so please download and install before the workshop**
 
 **Windows OS Requirements**
 >  
@@ -173,7 +169,7 @@ The `dockerdesktop-admin` tool allows System Administators to manage DDE applica
   * `dockerdesktop-admin.exe -UninstallVersionPack=[version-pack-name|'path-to-archive']`
   * **NOTE:** You must stop Docker Desktop before installing a version pack.
 
-### <a name="task1.2"></a>Task 1.3: Enable Kubernetes
+### <a name="task1.3"></a>Task 1.3: Enable Kubernetes
 
 Enabling Kubernetes in Docker Desktop only requires a single click.
 
@@ -404,8 +400,67 @@ services:
 
 4. Save the `docker-compose.yml` file
 5. Inside `Application Designer` click `Restart` which will rebuild the `links-app` using the updated images.
+6. Open your browser tab [http://localhost](http://localhost) and refresh and verify the `links-app` is still running
+
+**Cleanup**
+Let's cleanup our enviornemnt in preperation for the next task.
+
+1. Inside `Application Designer` click `Stop` which stop our `links-app` application using `docker-compose`
 
 ### <a name="task3.7"></a>Task 3.7: Deploy the Application on Kubernetes
+
+Our application runs inside `Application Designer` using `docker-compose`. In this section, we will re-use the same `docker-compose` file, Python & PHP files, and the same project directory to start our `links-app` using Kubernetes which we enabled earlier in [task 1.3](#task1.3). Without making any further changes we will now deploy the `links-app` with DDE Kubernetes.
+
+First, we need to prepare our enviornments.
+
+1. Within `Application Designer` click `Open in Visual Studio Code` which will open the `links-app` project in VS Code.
+2. Next, open a terminal inside VS Code. From the VS Code menu `Terminal` -> `New Terminal`
+3. Set the default Orchestrator to Kubernetes
+
+**Mac**
+
+```bash
+export DOCKER_STACK_ORCHESTRATOR=kubernetes
+```
+
+**Windows**
+
+```bat
+set DOCKER_STACK_ORCHESTRATOR=kubernetes
+```
+
+Next, we will deploy the `links-app` to Kubernetes running inside our DDE environment.
+
+1. Deploy the `links-app` to Kubernetes
+
+```docker
+docker stack deploy -c docker-compose.yaml links-app
+```
+
+![](./images/deploy-links-k8s.png)
+
+2. Verify the deployment was successful and in the terminal run: `kubectl get services`
+
+```bash
+kubectl get services
+
+NAME            TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+api             ClusterIP      None             <none>        55555/TCP        3m31s
+api-published   LoadBalancer   10.102.157.172   localhost     5000:32662/TCP   3m31s
+kubernetes      ClusterIP      10.96.0.1        <none>        443/TCP          18d
+www             ClusterIP      None             <none>        55555/TCP        3m31s
+www-published   LoadBalancer   10.102.165.196   localhost     80:32291/TCP     3m31s
+```
+
+3. Notice that `www-published` is mapped to `localhost:80` and `api-published` is mapped to `localhost:5000` just as we saw previously in `Application Designer`
+4. Open a new Browser Tab for `www-published` [http://localhost](http://localhost)
+5. Open another Browser Tab for `api-published` for [http://localhost:5000/api/https://docker.com](http://localhost:5000/api/https://docker.com)
+
+
+## Recap
+
+Congruatulations! In this section you have successfully added a custom repository, built and deployed the `links-app` application with `Application Designer`, performed live code changes to make the `links-app` Docker blue, and finally we deployed the same application in Kubernetes.
+
 
 ## <a name="task4"></a>Task 4: Connecting to Docker Enterprise UCP and DTR
 ### <a name="task4.2"></a>Task 4.1: Client Bundles
@@ -414,7 +469,7 @@ services:
 ## <a name="task5"></a>Task 5: Push to DTR
 ### <a name="task5.1"></a>Task 5.1: Push Images to DTR
 ### <a name="task5.2"></a>Task 5.2: Bundle the Application
-### <a name="task5.3"></a>Task 5.3: BPush Docker App to DTR
+### <a name="task5.3"></a>Task 5.3: Push Docker App to DTR
 
 ## <a name="task5"></a>Task 6: Deploy to UCP
 ### <a name="task6.1"></a>Task 5.1: Deploy to Swarm
